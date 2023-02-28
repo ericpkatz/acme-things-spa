@@ -2,6 +2,11 @@ const Sequelize = require('sequelize');
 const conn = new Sequelize(process.env.DATABASE_URL || 'postgres://localhost/acme_things_spa_db');
 
 const Thing = conn.define('thing', {
+  id: {
+    type: Sequelize.UUID,
+    primaryKey: true,
+    defaultValue: Sequelize.UUIDV4
+  },
   name: {
     type: Sequelize.STRING
   },
@@ -39,7 +44,13 @@ app.get('/api/things', async(req, res, next)=> {
 
 app.get('/api/things/:id', async(req, res, next)=> {
   try {
-    res.send(await Thing.findByPk(req.params.id));
+    const thing = await Thing.findByPk(req.params.id);
+    if(!thing){
+      res.sendStatus(404);
+    }
+    else {
+      res.send(thing);
+    }
   }
   catch(ex){
     next(ex);
